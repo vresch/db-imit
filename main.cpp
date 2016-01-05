@@ -12,13 +12,12 @@ struct city {
 };
 
 int main() {
+ std::vector<city> citydb;
  std::ifstream ifs; // possible to open file in construcor
  ifs.open("city.db", std::ifstream::in);
-
  /* read file by lines and push them in vector */
- std::vector<city> citydb;
  while( !ifs.eof() ) {
-  city inc, outc;
+  city inc;
   std::string id;
   std::getline(ifs, id, '|');
   inc.id = stoi(id);
@@ -27,35 +26,29 @@ int main() {
   //std::cout << inc.value << '\n'; // check file read by line to struct object
   
   citydb.push_back(inc);
-  outc = citydb.back();
-  std::cout << outc.id << " |" << outc.value << '\n'; // check vector pushing
+  std::cout << citydb.back().id << " |" << citydb.back().value << '\n'; // check vector pushing
  }
  ifs.close(); // finished file read to vector and close file stream
 
  /* selection, make function */
- 
- int sel;
- std::cout << "Input ID Number of item to select/deselect (0 - to quit): ";
- std::cin >> sel;
  std::set<int> citysel;
-
+ int sel = 1;
+ while (sel) {
+  std::cout << "Input ID Number of item to select/deselect (0 - to quit): ";
+  std::cin >> sel;
+  if ( citysel.find(sel) != citysel.end() )
+   citysel.erase(sel);
+  else
+   citysel.insert(sel); // make check if SEL is in vector CITYDB
  
- if (sel == 0) return 0;
- if ( citysel.find(sel) != citysel.end() ) {
-  citysel.erase(sel);
- }
- else {
-  citysel.insert(sel);
-  //std::cout << citysel(sel); // error 'nor call operation'
- }
- 
- /* print vector with selection, make deselection, make function */
- for(int i = 0; i < citydb.size(); i++) {
-  city outc;
-  outc = citydb.at(i);
-  if ( citysel.count(outc.id) != 0)
-   std::cout << '*';
-  std::cout << outc.id << '\n';
+  /* print vector with selection/deselection, make function display() */
+  for(int i = 0; i < citydb.size(); i++) {
+   if ( citysel.count(citydb.at(i).id) != 0)
+    std::cout << '*';
+   else
+    std::cout << ' ';
+   std::cout << citydb.at(i).id << " |" << citydb.at(i).value << '\n';
+  }
  }
 
  return 0;
