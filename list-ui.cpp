@@ -1,67 +1,99 @@
 /*  DB imitation*/
 #include <iostream>
+#include <sstream>
 #include <fstream>
-#include <string>
 #include <vector>
 #include <set>
 
-struct City {
+const char Delimiter = '|';
+
+struct Entry {
     int id;
     std::string value;
 };
 
-City line_to_struct(std::ifstream &ifs);
-std::vector<City> file_to_vector(const std::string filename, std::vector<City> &cities);
-void display_vector(const std::vector<City> &cities, const std::set<int> &selected_cities);
+bool operator < (const Entry &e1, const Entry &e2) { return e1.id < e2.id; }
+std::vector<std::string> split_string(const std::string &str, char delimiter);
+Entry line_to_entry(const std::string &str);
+std::vector<Entry> create_entries(std::ifstream &input);
+void display_entries(const std::vector<Entry> &entries, const std::set<Entry> &selected);
+void run_ui(const std::vector<Entry> &entries);
 
-int main() {
-    std::vector<City> cities;
-    std::set<int> selected_cities;
-    std::string filename = "city.db";
-    cities = file_to_vector(filename, cities);
-    
-    int sel = 1;
-    while (sel) {
-        display_vector(cities, selected_cities);
-        std::cout << "Input ID Number of item to select/deselect (0 - to quit): ";
-        std::cin >> sel;
-        if ( selected_cities.find(sel) != selected_cities.end() )
-            selected_cities.erase(sel);
-        else
-            selected_cities.insert(sel); // make check if SEL is in vector cities
-    }
+const std::string FilenameData = "city.db";
+
+int main() 
+{
+    std::ifstream input(FilenameData);
+    std::vector<Entry> cities = create_entries(input);
+    run_ui(cities);
 
     return 0;
 }
 
-std::vector<City> file_to_vector(const std::string filename, std::vector<City> &cities) {
-    std::ifstream ifs(filename, std::ifstream::in);
-    while( !ifs.eof() ) {
-        City city;
-        city = line_to_struct(ifs);
-        cities.push_back(city);
+std::vector<std::string> split_string(const std::string &str, char delimiter)
+{
+    std::stringstream input(str);
+    std::vector<std::string> substrings;
+    std::string substring;
+    while ( std::getline(input, substring, delimiter) ) {
+        substrings.push_back(substring);
     }
-    ifs.close();
-
-    return cities;
+    return substrings;
 }
 
-City line_to_struct(std::ifstream &ifs) {
-    City city;
-    std::string id;
-    std::getline(ifs, id, '|');
-    city.id = stoi(id);
-    std::getline(ifs, city.value);
-
-    return city;
+std::vector<Entry> create_entries(std::ifstream &input) 
+{
+    std::vector<Entry> entries;
+    std::string line;
+    while ( std::getline(input, line) ) {
+        entries.push_back( line_to_entry(line) );
+    }
+    return entries;
 }
 
-void display_vector(const std::vector<City> &cities, const std::set<int> &selected_cities) {
-    for(int i = 0; i < cities.size(); i++) {
-        if (selected_cities.count(cities.at(i).id) != 0)
-            std::cout << '*';
-        else
-            std::cout << ' ';
-        std::cout << cities.at(i).id << " |" << cities.at(i).value << '\n';
+Entry line_to_entry(const std::string &str) 
+{
+    auto substrings = split_string(str, Delimiter);
+    int id = std::stoi(substrings[0]);
+    std::string value = substrings[1];
+
+    // C99 syntacs for struct initialisation
+    return Entry{.id = id, .value = value};
+}
+
+void display_entries(const std::vector<Entry> &entries, const std::set<Entry> &selected) 
+{
+    int i = 1;
+    for (auto e : entries) {
+       std::string sel = selected.count(e) ? "* " : "  " ;
+        std::cout << sel << i << ". "  << e.id << "|" << e.value << '\n';
+        i++;
+    }
+}
+
+void run_ui(const std::vector<Entry> &entries) {
+    const std::string Prompt = ">";
+    std::set<Entry> selected_entries;
+    while (true) {
+        display_entries(entries, selected_entries);
+
+        std::string user_input;
+        std::cout << Prompt << " ";
+        std::cin >> user_input;
+
+        if (user_input == "exit" ||
+            user_input == "quit")
+        {
+            break;
+        } else {
+            int index = std::stoi(user_input) - 1;
+            Entry entry = entries.at(index);
+            if ( selected_entries.count(entry) )
+            {
+                selected_entries.erase(entry);
+            } else {
+                selected_entries.insert(entry);
+            }
+        }
     }
 }
