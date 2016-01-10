@@ -102,7 +102,7 @@ void run_ui(const std::vector<Entry> &entries, const std::string &selectedfilena
             user_input == "0")
         {
             break;
-        } else if ( stoi(user_input) > 0 && stoi(user_input) < entries.size() ) {
+        } else if ( stoi(user_input) > 0 && stoi(user_input) <= entries.size() ) {
             int index = std::stoi(user_input) - 1;
             Entry entry = entries.at(index);
             if ( selected_entries.count(entry) )

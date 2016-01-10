@@ -14,7 +14,7 @@ int main(int argc, char *argv[])
         if ( !std::strcmp(argv[1], "--select") ||
              !std::strcmp(argv[1], "-s") )
         {
-            if ( argv[2] && (std::atoi(argv[2]) - 1) > 0 && (std::atoi(argv[2]) - 1) < entries.size() ) 
+            if ( argv[2] && std::atoi(argv[2]) > 0 && std::atoi(argv[2]) <= entries.size() ) 
             {
                 int index = std::atoi(argv[2]) - 1;
                 Entry entry = entries.at(index);
